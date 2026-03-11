@@ -1,0 +1,2 @@
+[workspace]
+packages = ["shopify_to_quickbooks_transaction"]
