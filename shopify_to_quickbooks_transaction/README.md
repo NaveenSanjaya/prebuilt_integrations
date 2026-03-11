@@ -1,45 +1,72 @@
 # Shopify to QuickBooks Transaction Sync
 
-## Overview
+## Description
+
 This prebuilt integration automatically synchronizes Shopify orders to QuickBooks Online as transactions (e.g. Sales Receipts or Invoices). By listening for Shopify order webhooks, it enables real-time synchronization, mapping Shopify line items, shipping charges, and discounts accurately into QuickBooks to ensure consistent financial records.
 
-## Features
-- Real-time synchronization triggered by Shopify webhooks (`orders/fulfilled` or `orders/paid`).
-- Mapping of Shopify products to QuickBooks Items.
-- Lookup or creation of QuickBooks customers corresponding to Shopify customers.
-- Management of multi-currency orders, shipping charges, discounts, and custom tax codes.
-- Filter criteria to sync orders by status (`FULFILLED`, `PAID`, or `COMPLETED`).
-- Robust quarantine mechanism to defer orders lacking configuration details or failing validation.
+### What It Does
+
+- Listens for Shopify order webhooks (`orders/fulfilled` or `orders/paid`)
+- Maps Shopify products to QuickBooks Items using configurable SKUs
+- Looks up or creates QuickBooks customers corresponding to Shopify customers
+- Creates QuickBooks transactions (Sales Receipts or Invoices) automatically
+- Manages multi-currency orders, shipping charges, discounts, and custom tax codes
+- Quarantines orders lacking configuration details or failing validation for manual review
 
 ## Prerequisites
-- A **Shopify** account and administrative access to create Webhooks.
-- A **QuickBooks Online** account with API access (Developer Portal).
-- Active API Credentials for both systems.
 
-## Getting Started
+Before running this integration, you need:
 
-### 1. Shopify Setup
-1. Log in to your Shopify Admin Dashboard.
-2. Go to **Settings > Notifications > Webhooks**.
-3. Create a new webhook for `orders/fulfilled` or `orders/paid` in JSON format.
-4. Set the Endpoint URL to the generated webhook URL of this integration.
-5. Note down the **Webhook Signing Secret**.
+### Shopify Setup
 
-### 2. QuickBooks Online Setup
-1. Log in to the [Intuit Developer Portal](https://developer.intuit.com).
-2. Create an App under the Dashboard and enable the **Accounting** scope (`com.intuit.quickbooks.accounting`).
-3. Retrieve your **Client ID** and **Client Secret**.
-4. Generate a **Refresh Token** via the OAuth API Playground or your custom auth implementation.
-5. Note your **Company ID (Realm ID)**.
+1. A Shopify account and administrative access to create Webhooks.
+2. Webhook Credentials:
+  - Proceed to **Settings > Notifications > Webhooks** in the Shopify Admin Dashboard.
+  - Create a new webhook for your desired event (`orders/fulfilled`).
+  - Set the Endpoint URL to the generated webhook URL of this integration after deployment.
+  - Scroll down and copy your **Webhook Signing Secret**.
 
-### 3. Setup and Configuration
-Deploy this integration in your environment and provide the following required parameters during the setup wizard:
-- `shopifyConfig.apiSecretKey`: Your Shopify webhook signing secret.
-- `quickbooksConfig.clientId`: Your QuickBooks app Client ID.
-- `quickbooksConfig.clientSecret`: Your QuickBooks app Client Secret.
-- `quickbooksConfig.refreshToken`: Your QuickBooks app Refresh Token.
-- `quickbooksConfig.companyId`: Your QuickBooks Realm ID.
-- Account configurations (e.g. Product Sales Account ID, Shipping Account ID, Discount Account ID).
+### QuickBooks Setup
 
-## Deployment Flow
-This integration is developed as an Event-Driven Webhook Consumer using Ballerina. When a webhook arrives at the listener port (8090), it validates the HMAC signature, parses the order data, performs cross-reference lookups with QuickBooks, and pushes the final transformed sales receipt or invoice transaction securely to the Intuit API.
+1. A QuickBooks Online account with API access
+2. A QuickBooks Developer App with Accounting scope (`com.intuit.quickbooks.accounting`)
+3. OAuth2 credentials:
+  - Client ID
+  - Client Secret
+  - Refresh Token
+  - Company ID (Realm ID)
+
+This integration uses refresh token flow for auth. [Learn how to set up QuickBooks OAuth](https://developer.intuit.com/app/developer/qbo/docs/develop/authentication-and-authorization/oauth-2.0).
+
+## Configuration
+
+The following configurations are required to connect to Shopify and QuickBooks.
+
+### Shopify Credentials
+
+- `apiSecretKey` - Your Shopify webhook signing secret
+
+### QuickBooks Credentials
+
+- `clientId` - Your QuickBooks OAuth2 client ID
+- `clientSecret` - Your QuickBooks OAuth2 client secret
+- `refreshToken` - Your QuickBooks OAuth2 refresh token
+- `companyId` - Your QuickBooks Company ID (Realm ID)
+
+### Additional Settings
+
+- `transactionType` - Type of QB transaction to create (SALES_RECEIPT, INVOICE, PAYMENT)
+- `orderStatusTrigger` - Order status to sync on (FULFILLED, PAID, COMPLETED)
+- `createCustomerIfNotFound` - Auto-create QB customers if not found
+- Account configurations (Product Sales Account ID, Shipping Account ID, Discount Account ID)
+
+## Deploying on **Devant**
+
+1. Sign in to your Devant account.
+2. Create a new Integration and follow instructions in [Devant Documentation](https://wso2.com/devant/docs/references/import-a-repository/) to import this repository.
+3. Select the **Technology** as `WSO2 Integrator: BI`.
+4. Choose the **Integration** Type as `Automation` and click **Create**.
+5. Once the build is successful, click **Configure to Continue** and set up the required environment variables for Shopify and QuickBooks credentials.
+6. Copy the **Webhook URL** provided by the Devant platform and enter it in your Shopify webhook configuration.
+7. Click **Deploy** to activate the automation.
+8. Once tested with a dummy order, you may promote the integration to production. Make sure to set the relevant environment variables in the production environment as well.

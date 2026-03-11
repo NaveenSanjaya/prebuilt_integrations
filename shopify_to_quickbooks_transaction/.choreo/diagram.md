@@ -1,4 +1,3 @@
-```mermaid
 flowchart TD
     %% Nodes
     A([Start: Shopify Webhook Received/OrdersFulfilled]):::startNode
@@ -33,5 +32,3 @@ flowchart TD
     J -- No --> L
     K --> M
     L --> M
-
-```
