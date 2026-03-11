@@ -14,3 +14,4 @@ Config.toml
 # This should not be committed to version control.
 trace_enabled.bal
 config.toml
+Dependencies.toml
